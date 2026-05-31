@@ -7,7 +7,8 @@ wheels/
 *.egg-info
 .ipynb-checkpoints/
 mlruns/
-data/raw/
+data/raw/*
+!data/raw/*.dvc
 
 # Virtual environments
 .venv
