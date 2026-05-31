@@ -9,6 +9,7 @@ wheels/
 mlruns/
 data/raw/*
 !data/raw/*.dvc
+!data/preprocessed/*.dvc
 
 # Virtual environments
 .venv
