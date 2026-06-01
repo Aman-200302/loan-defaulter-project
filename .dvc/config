@@ -1,5 +1,5 @@
 [core]
-    remote = gdrive
+    remote = origin
 ['remote "gdrive"']
     url = gdrive://1FPRttDu9aj8UMSA57FhT9teXq4Zz08_X
     gdrive_acknowledge_abuse = true
