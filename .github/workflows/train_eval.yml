@@ -28,6 +28,12 @@ jobs:
 
       - name: Sync dependencies
         run: uv sync
+      
+      - name: Install dependencies
+        run: |
+          pip install dvc dvc-http
+          pip install pandas numpy scikit-learn xgboost mlflow \
+                      joblib matplotlib pyarrow feast setuptools
 
       # 4. Download data + preprocess
       - name: Pull data with DVC
