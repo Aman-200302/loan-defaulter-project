@@ -1,64 +1,91 @@
-
 name: ML Training & Evaluation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   train-and-report:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out code
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # 2. Set up Python
+      # 2. Setup Python
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      # 3. Install dependencies      
+      # 3. Install dependencies
       - name: Install dependencies
         run: |
-          pip install dvc dvc-http
-          pip install pandas numpy scikit-learn xgboost mlflow \
-                      joblib matplotlib pyarrow feast setuptools
+          python -m pip install --upgrade pip
 
-      # 4. Download data + preprocess
-      - name: Pull data with DVC
+          pip install dvc dvc-http
+
+          pip install pandas numpy scikit-learn \
+                      xgboost mlflow \
+                      joblib matplotlib pyarrow \
+                      feast setuptools
+
+      # 4. Verify DVC configuration
+      - name: Verify DVC
+        run: |
+          dvc version
+          dvc remote list
+
+      # 5. Configure DagsHub authentication
+      - name: Configure DVC remote
         env:
           DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
           dvc remote modify origin --local auth basic
-          dvc remote modify origin --local user $DAGSHUB_USERNAME
-          dvc remote modify origin --local password $DAGSHUB_TOKEN
+          dvc remote modify origin --local user "$DAGSHUB_USERNAME"
+          dvc remote modify origin --local password "$DAGSHUB_TOKEN"
+
+      # 6. Pull data from DagsHub
+      - name: Pull data
+        run: |
           dvc pull -r origin
 
-      # 5. Train and evaluate model
-      - name: Train and evaluate
-        run: python src/train_eval.py
+      # 7. Train and evaluate model
+      - name: Train model
+        run: |
+          python src/train_eval.py
 
-      - name: Publish metrics report
-        uses: iterative/cml@v3
+      # 8. Upload reports
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
         with:
-          cmd: |
-            echo "## 🏦 Loan Default Model — Training Report" > report.md
-            echo "" >> report.md
-            echo "### Metrics" >> report.md
-            echo '```json' >> report.md
-            cat reports/metrics.json >> report.md
-            echo '```' >> report.md
-            echo "" >> report.md
-            echo "### Confusion Matrix" >> report.md
-            echo "![Confusion Matrix](reports/confusion_matrix.png)" >> report.md
-            echo "" >> report.md
-            echo "*Triggered by commit: ${{ github.sha }}*" >> report.md
-            cml comment create report.md
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: reports
+          path: reports/
+
+      # 9. Upload trained model
+      - name: Upload model
+        uses: actions/upload-artifact@v4
+        with:
+          name: model
+          path: models/
+
+      # 10. Publish metrics in workflow summary
+      - name: Training Summary
+        run: |
+          echo "## 🏦 Loan Default Prediction Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Metrics" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat reports/metrics.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated Files" >> $GITHUB_STEP_SUMMARY
+          echo "- models/model.pkl" >> $GITHUB_STEP_SUMMARY
+          echo "- reports/metrics.json" >> $GITHUB_STEP_SUMMARY
+          echo "- reports/confusion_matrix.png" >> $GITHUB_STEP_SUMMARY
