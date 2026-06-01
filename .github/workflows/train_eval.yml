@@ -22,13 +22,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 3. Install dependencies
-      - name: Install uv
-        run: pip install uv
-
-      - name: Sync dependencies
-        run: uv sync
-      
+      # 3. Install dependencies      
+      - name: Install dependencies
+        run: |
+          pip install dvc dvc-http
+          pip install pandas numpy scikit-learn xgboost mlflow \
+                      joblib matplotlib pyarrow feast setuptools
 
       # 4. Download data + preprocess
       - name: Pull data with DVC
