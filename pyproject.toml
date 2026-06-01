@@ -5,16 +5,21 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
+    "dvc>=3.67.1",
+    "dvc-gdrive>=3.0.1",
     "evidently>=0.7.21",
     "fastapi>=0.136.3",
+    "feast>=0.50.0",
     "ipykernel>=7.2.0",
     "jupyter>=1.1.1",
+    "kaggle>=2.2.0",
     "matplotlib>=3.10.9",
     "mlflow>=3.12.0",
     "numpy>=2.4.6",
     "pandas>=2.3.3",
     "scikit-learn>=1.8.0",
     "seaborn>=0.13.2",
-    "uvicorn>=0.48.0",
+    "setuptools>=82.0.1",
+    "uvicorn>=0.30.6,<0.35.0",
     "xgboost>=3.2.0",
 ]

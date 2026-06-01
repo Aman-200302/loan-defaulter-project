@@ -52,7 +52,7 @@ jobs:
 
       # 6. Set up CML
       - name: Set up CML
-        uses: iterative/setup-cml@v1
+        uses: iterative/setup-cml@v2
 
       # 7. Post metrics report as PR/commit comment
       - name: Publish CML report
