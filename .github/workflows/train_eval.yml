@@ -44,27 +44,21 @@ jobs:
       - name: Train and evaluate
         run: python src/train_eval.py
 
-      # 6. Set up CML
-      - name: Set up CML
-        uses: iterative/setup-cml@v2
-
-      # 7. Post metrics report as PR/commit comment
-      - name: Publish CML report
+      - name: Publish metrics report
+        uses: iterative/cml@v3
+        with:
+          cmd: |
+            echo "## 🏦 Loan Default Model — Training Report" > report.md
+            echo "" >> report.md
+            echo "### Metrics" >> report.md
+            echo '```json' >> report.md
+            cat reports/metrics.json >> report.md
+            echo '```' >> report.md
+            echo "" >> report.md
+            echo "### Confusion Matrix" >> report.md
+            echo "![Confusion Matrix](reports/confusion_matrix.png)" >> report.md
+            echo "" >> report.md
+            echo "*Triggered by commit: ${{ github.sha }}*" >> report.md
+            cml comment create report.md
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Build the markdown report
-          echo "## 🏦 Loan Default Model — Training Report" > report.md
-          echo "" >> report.md
-          echo "### Metrics" >> report.md
-          echo '```json' >> report.md
-          cat reports/metrics.json >> report.md
-          echo '```' >> report.md
-          echo "" >> report.md
-          echo "### Confusion Matrix" >> report.md
-          cml publish reports/confusion_matrix.png --md >> report.md
-          echo "" >> report.md
-          echo "*Triggered by commit: ${{ github.sha }}*" >> report.md
-
-          # Post the report
-          cml comment create report.md
