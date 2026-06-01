@@ -1,0 +1,64 @@
+
+name: ML Training & Evaluation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  train-and-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out code
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn xgboost mlflow \
+                      joblib matplotlib pyarrow feast setuptools
+
+      # 4. Download data + preprocess
+      - name: Download and preprocess data
+        run: |
+          python src/download_data.py
+          python src/preprocess.py
+
+      # 5. Train and evaluate model
+      - name: Train and evaluate
+        run: python src/train_eval.py
+
+      # 6. Set up CML
+      - name: Set up CML
+        uses: iterative/setup-cml@v1
+
+      # 7. Post metrics report as PR/commit comment
+      - name: Publish CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Build the markdown report
+          echo "## 🏦 Loan Default Model — Training Report" > report.md
+          echo "" >> report.md
+          echo "### Metrics" >> report.md
+          echo '```json' >> report.md
+          cat reports/metrics.json >> report.md
+          echo '```' >> report.md
+          echo "" >> report.md
+          echo "### Confusion Matrix" >> report.md
+          cml publish reports/confusion_matrix.png --md >> report.md
+          echo "" >> report.md
+          echo "*Triggered by commit: ${{ github.sha }}*" >> report.md
+
+          # Post the report
+          cml comment create report.md
