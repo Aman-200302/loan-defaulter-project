@@ -33,13 +33,7 @@ jobs:
                       joblib matplotlib pyarrow \
                       feast setuptools
 
-      # 4. Verify DVC configuration
-      - name: Verify DVC
-        run: |
-          dvc version
-          dvc remote list
-
-      # 5. Configure DagsHub authentication
+      # 4. Configure DagsHub authentication
       - name: Configure DVC remote
         env:
           DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
@@ -49,31 +43,31 @@ jobs:
           dvc remote modify origin --local user "$DAGSHUB_USERNAME"
           dvc remote modify origin --local password "$DAGSHUB_TOKEN"
 
-      # 6. Pull data from DagsHub
+      # 5. Pull data from DagsHub
       - name: Pull data
         run: |
           dvc pull -r origin
 
-      # 7. Train and evaluate model
+      # 6. Train and evaluate model
       - name: Train model
         run: |
           python src/train_eval.py
 
-      # 8. Upload reports
+      # 7. Upload reports
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
           name: reports
           path: reports/
 
-      # 9. Upload trained model
+      # 8. Upload trained model
       - name: Upload model
         uses: actions/upload-artifact@v4
         with:
           name: model
           path: models/
 
-      # 10. Publish metrics in workflow summary
+      # 9. Publish metrics in workflow summary
       - name: Training Summary
         run: |
           echo "## 🏦 Loan Default Prediction Report" >> $GITHUB_STEP_SUMMARY
