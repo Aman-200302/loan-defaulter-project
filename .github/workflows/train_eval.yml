@@ -50,6 +50,8 @@ jobs:
 
       # 6. Train and evaluate model
       - name: Train model
+        env:
+          MLFLOW_ALLOW_FILE_STORE: "true"
         run: |
           python src/train_eval.py
 
