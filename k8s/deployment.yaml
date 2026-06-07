@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-default-api
+  labels:
+    app: loan-default-api
+spec:
+  replicas: 2          # two pods — if one crashes, the other serves
+  selector:
+    matchLabels:
+      app: loan-default-api
+  template:
+    metadata:
+      labels:
+        app: loan-default-api
+    spec:
+      containers:
+      - name: loan-default-api
+        image: loan-default-api:v1
+        imagePullPolicy: Never    # use local image, not Docker Hub
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-default-service
+spec:
+  selector:
+    app: loan-default-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: LoadBalancer
